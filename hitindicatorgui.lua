@@ -1,3 +1,10 @@
+if _G.HitIndicatorConnection then
+    _G.HitIndicatorConnection:Disconnect()
+    _G.HitIndicatorConnection = nil
+end
+
+_G.HitIndicatorEnabled = true
+
 -- Tabel untuk menyimpan damage stacking per target
 local activeLabels = {}
 local player = game.Players.LocalPlayer
