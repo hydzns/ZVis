@@ -1,37 +1,57 @@
--- Tabel untuk menyimpan health sebelumnya dan damage stacking
-local lastHealth = {}
-local activeBillboards = {}
+local RunService = game:GetService("RunService")
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
 
--- Fungsi untuk membuat atau update BillboardGui damage text
-function showAccumulatedDamage(player, damage)
-    local head = player.Character and player.Character:FindFirstChild("Head")
+-- Matikan koneksi sebelumnya kalau ada
+if _G.HitIndicatorConnection then
+    _G.HitIndicatorConnection:Disconnect()
+    _G.HitIndicatorConnection = nil
+end
+
+_G.HitIndicatorEnabled = true
+
+local activeBillboards = {}
+local lastHealth = {}
+
+-- Fungsi styling damage
+local function getStyle(amount)
+    if amount >= 450 then
+        return Color3.fromRGB(120, 0, 0), 72 -- Merah gelap, ukuran x1.5
+    elseif amount >= 350 then
+        return Color3.fromRGB(100, 0, 150), 48 -- Ungu gelap, ukuran x1
+    elseif amount >= 250 then
+        return Color3.fromRGB(170, 0, 255), 24 -- Ungu terang, ukuran x0.5
+    else
+        return Color3.new(1, 0, 0), 24 -- Merah biasa, ukuran x0.5
+    end
+end
+
+-- Fungsi menampilkan damage
+local function showAccumulatedDamage(targetPlayer, damage)
+    local head = targetPlayer.Character and targetPlayer.Character:FindFirstChild("Head")
     if not head then return end
 
-    local id = player.UserId
+    local id = targetPlayer.UserId
     local billboard = activeBillboards[id]
 
     if billboard and billboard.Parent then
         local label = billboard:FindFirstChild("DamageLabel")
         if label then
-            -- Tambahkan damage ke yang sudah ada
             local currentDamage = tonumber(string.match(label.Text, "%d+")) or 0
             local newDamage = currentDamage + damage
             label.Text = "-" .. tostring(newDamage)
 
-            -- Ganti warna jika damage total > 80
-            if newDamage > 272 then
-                label.TextColor3 = Color3.fromRGB(170, 0, 255)
-            else
-                label.TextColor3 = Color3.new(1, 0, 0)
-            end
+            local color, size = getStyle(newDamage)
+            label.TextColor3 = color
+            label.TextSize = size
 
-            -- Reset timer untuk menghapus
-            if billboard:FindFirstChild("RemoveAt") then
-                billboard.RemoveAt.Value = tick() + 1.5
+            local removeTime = billboard:FindFirstChild("RemoveAt")
+            if removeTime then
+                removeTime.Value = tick() + 1.5
             end
         end
     else
-        -- Buat baru
+        -- Buat Billboard baru
         billboard = Instance.new("BillboardGui")
         billboard.Adornee = head
         billboard.Size = UDim2.new(0, 100, 0, 40)
@@ -39,56 +59,61 @@ function showAccumulatedDamage(player, damage)
         billboard.AlwaysOnTop = true
         billboard.Name = "AccumulatedDamage_" .. id
 
-        local textLabel = Instance.new("TextLabel")
-        textLabel.Name = "DamageLabel"
-        textLabel.Size = UDim2.new(1, 0, 1, 0)
-        textLabel.BackgroundTransparency = 1
-        textLabel.Text = "-" .. tostring(damage)
-        textLabel.TextColor3 = damage > 80 and Color3.fromRGB(170, 0, 255) or Color3.new(1, 0, 0)
-        textLabel.TextStrokeTransparency = 0
-        textLabel.TextScaled = true
-        textLabel.Font = Enum.Font.SourceSansBold
-        textLabel.Parent = billboard
+        local label = Instance.new("TextLabel")
+        label.Name = "DamageLabel"
+        label.Size = UDim2.new(1, 0, 1, 0)
+        label.BackgroundTransparency = 1
+        label.Text = "-" .. tostring(damage)
 
-        -- Waktu penghapusan
+        local color, size = getStyle(damage)
+        label.TextColor3 = color
+        label.TextStrokeTransparency = 0
+        label.TextScaled = false
+        label.TextSize = size
+        label.Font = Enum.Font.Arcade
+        label.Parent = billboard
+
         local removeTime = Instance.new("NumberValue")
         removeTime.Name = "RemoveAt"
-        removeTime.Value = tick() + 1.5
+        removeTime.Value = tick() + 3
         removeTime.Parent = billboard
 
-        billboard.Parent = game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui")
+        billboard.Parent = LocalPlayer:WaitForChild("PlayerGui")
         activeBillboards[id] = billboard
     end
 end
 
--- Fungsi utama pemantauan
-function monitorDamage()
-    while task.wait(0.1) do
-        for _, player in pairs(game.Players:GetPlayers()) do
-            if player ~= game.Players.LocalPlayer and player.Character then
-                local humanoid = player.Character:FindFirstChild("Humanoid")
-                if humanoid then
-                    local currentHealth = humanoid.Health
-                    local previousHealth = lastHealth[player] or currentHealth
-                    if currentHealth < previousHealth then
-                        local damage = math.floor(previousHealth - currentHealth)
+-- Loop deteksi damage
+_G.HitIndicatorConnection = RunService.Heartbeat:Connect(function()
+    if not _G.HitIndicatorEnabled then return end
+
+    for _, player in pairs(Players:GetPlayers()) do
+        if player ~= LocalPlayer and player.Character then
+            local humanoid = player.Character:FindFirstChild("Humanoid")
+            if humanoid then
+                local currentHealth = humanoid.Health
+                local previous = lastHealth[player] or currentHealth
+
+                if currentHealth < previous then
+                    local damage = math.floor(previous - currentHealth)
+
+                    local tag = humanoid:FindFirstChild("creator")
+                    if tag and tag.Value == LocalPlayer then
                         showAccumulatedDamage(player, damage)
                     end
-                    lastHealth[player] = currentHealth
                 end
-            end
-        end
 
-        -- Hapus billboard jika waktunya habis
-        for id, billboard in pairs(activeBillboards) do
-            if billboard and billboard:FindFirstChild("RemoveAt") then
-                if tick() > billboard.RemoveAt.Value then
-                    billboard:Destroy()
-                    activeBillboards[id] = nil
-                end
+                lastHealth[player] = currentHealth
             end
         end
     end
-end
 
-monitorDamage()
+    -- Bersihkan jika sudah waktunya
+    for id, billboard in pairs(activeBillboards) do
+        local removeTime = billboard:FindFirstChild("RemoveAt")
+        if removeTime and tick() > removeTime.Value then
+            billboard:Destroy()
+            activeBillboards[id] = nil
+        end
+    end
+end)
