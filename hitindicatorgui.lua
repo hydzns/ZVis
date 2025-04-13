@@ -1,49 +1,20 @@
-local Rayfield = getgenv().Rayfield
-if not Rayfield then
-    warn("Rayfield belum di-load! Harus dipanggil sebelum script ini.")
-    return
-end
-
-if _G.HitIndicatorEnabled then
-    Rayfield:Notify({
-        Title = "Damage Indicator",
-        Content = "Script ini sudah aktif!",
-        Duration = 5,
-        Actions = {
-            Ignore = {
-                Name = "Oke",
-                Callback = function() end
-            }
-        }
-    })
-    return
-end
-
-_G.HitIndicatorEnabled = true
-
 if _G.HitIndicatorConnection then
     _G.HitIndicatorConnection:Disconnect()
     _G.HitIndicatorConnection = nil
 end
 
--- Kirim notifikasi saat script aktif
-Rayfield:Notify({
-    Title = "Damage Indicator",
-    Content = "Script ini berhasil diaktifkan!",
-    Duration = 5,
-    Actions = {
-        Ignore = {
-            Name = "Sip",
-            Callback = function() end
-        }
-    }
-})
+_G.HitIndicatorEnabled = true
 
+local RunService = game:GetService("RunService")
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+
+-- Tabel untuk menyimpan damage stacking per target
 local activeLabels = {}
-local player = game.Players.LocalPlayer
+local lastHealth = {}
 
 -- Setup GUI
-local function setupGui()
+function setupGui()
     local gui = player:WaitForChild("PlayerGui"):FindFirstChild("DamageScreenGui")
     if gui then return gui end
 
@@ -57,14 +28,14 @@ local function setupGui()
 end
 
 -- Fungsi untuk menampilkan damage
-local function showAccumulatedDamage(target, damage)
+function showAccumulatedDamage(target, damage)
     local id = target.UserId
     local entry = activeLabels[id]
 
     if entry and entry.label and entry.label.Parent then
         entry.damage = entry.damage + damage
         entry.label.Text = "-" .. tostring(entry.damage)
-        entry.label.TextColor3 = damage > 272 and Color3.fromRGB(170, 0, 255) or Color3.new(1, 0, 0)
+        entry.label.TextColor3 = entry.damage > 272 and Color3.fromRGB(170, 0, 255) or Color3.new(1, 0, 0)
         entry.expireTime = tick() + 1.5
     else
         local screenGui = setupGui()
@@ -72,6 +43,7 @@ local function showAccumulatedDamage(target, damage)
         label.Name = "DamageLabel_" .. id
         label.Size = UDim2.new(0, 250, 0, 50)
 
+        -- Posisi vertikal berdasarkan jumlah label aktif
         local yOffset = 0
         for _, other in pairs(activeLabels) do
             yOffset = yOffset + 55
@@ -95,41 +67,36 @@ local function showAccumulatedDamage(target, damage)
     end
 end
 
--- Fungsi deteksi damage
-local function monitorOutgoingDamage()
-    local lastHealth = {}
+-- Fungsi utama dengan koneksi tunggal
+_G.HitIndicatorConnection = RunService.Heartbeat:Connect(function()
+    if not _G.HitIndicatorEnabled then return end
 
-    _G.HitIndicatorConnection = game:GetService("RunService").Heartbeat:Connect(function()
-        for _, target in pairs(game.Players:GetPlayers()) do
-            if target ~= player and target.Character then
-                local humanoid = target.Character:FindFirstChild("Humanoid")
-                if humanoid then
-                    local currentHealth = humanoid.Health
-                    local previous = lastHealth[target] or currentHealth
+    for _, target in pairs(Players:GetPlayers()) do
+        if target ~= player and target.Character then
+            local humanoid = target.Character:FindFirstChild("Humanoid")
+            if humanoid then
+                local currentHealth = humanoid.Health
+                local previous = lastHealth[target] or currentHealth
 
-                    if currentHealth < previous then
-                        local damage = math.floor(previous - currentHealth)
-                        local tag = humanoid:FindFirstChild("creator")
-                        if tag and tag.Value == player then
-                            showAccumulatedDamage(target, damage)
-                        end
+                if currentHealth < previous then
+                    local damage = math.floor(previous - currentHealth)
+
+                    local tag = humanoid:FindFirstChild("creator")
+                    if tag and tag.Value == player then
+                        showAccumulatedDamage(target, damage)
                     end
-
-                    lastHealth[target] = currentHealth
                 end
+
+                lastHealth[target] = currentHealth
             end
         end
+    end
 
-        -- Hapus label expired
-        for id, entry in pairs(activeLabels) do
-            if tick() > entry.expireTime then
-                if entry.label then
-                    entry.label:Destroy()
-                end
-                activeLabels[id] = nil
-            end
+    -- Bersihkan label yang sudah expired
+    for id, entry in pairs(activeLabels) do
+        if tick() > entry.expireTime then
+            if entry.label then entry.label:Destroy() end
+            activeLabels[id] = nil
         end
-    end)
-end
-
-monitorOutgoingDamage()
+    end
+end)
