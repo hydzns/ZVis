@@ -1,8 +1,3 @@
-local RunService = game:GetService("RunService")
-local Players = game:GetService("Players")
-local LocalPlayer = Players.LocalPlayer
-
--- Matikan koneksi sebelumnya kalau ada
 if _G.HitIndicatorConnection then
     _G.HitIndicatorConnection:Disconnect()
     _G.HitIndicatorConnection = nil
@@ -10,10 +5,13 @@ end
 
 _G.HitIndicatorEnabled = true
 
+local RunService = game:GetService("RunService")
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+
 local activeBillboards = {}
 local lastHealth = {}
 
--- Fungsi styling damage
 local function getStyle(amount)
     if amount >= 450 then
         return Color3.fromRGB(120, 0, 0), 200
@@ -26,12 +24,11 @@ local function getStyle(amount)
     end
 end
 
--- Fungsi menampilkan damage
-local function showAccumulatedDamage(targetPlayer, damage)
-    local head = targetPlayer.Character and targetPlayer.Character:FindFirstChild("Head")
+local function showAccumulatedDamage(target, damage)
+    local head = target.Character and target.Character:FindFirstChild("Head") or target:FindFirstChild("Head")
     if not head then return end
 
-    local id = targetPlayer.UserId
+    local id = target:GetDebugId()
     local billboard = activeBillboards[id]
 
     if billboard and billboard.Parent then
@@ -82,7 +79,6 @@ local function showAccumulatedDamage(targetPlayer, damage)
     end
 end
 
--- Deteksi damage
 _G.HitIndicatorConnection = RunService.Heartbeat:Connect(function()
     if not _G.HitIndicatorEnabled then return end
 
@@ -95,19 +91,51 @@ _G.HitIndicatorConnection = RunService.Heartbeat:Connect(function()
 
                 if currentHealth < previous then
                     local damage = math.floor(previous - currentHealth)
-
                     local tag = humanoid:FindFirstChild("creator")
-                    if tag and tag.Value == LocalPlayer then
-                        showAccumulatedDamage(player, damage)
+
+                    if tag then
+                        local val = tag.Value
+                        local isFromPlayer =
+                            (typeof(val) == "Instance" and (val == LocalPlayer or (val:IsA("Tool") and val.Parent == LocalPlayer.Character))) or
+                            (typeof(val) == "string" and val == LocalPlayer.Name)
+
+                        if isFromPlayer then
+                            showAccumulatedDamage(player, damage)
+                        end
                     end
                 end
-
                 lastHealth[player] = currentHealth
             end
         end
     end
 
-    -- Bersihkan jika sudah waktunya
+    for _, model in pairs(workspace:GetChildren()) do
+        if model:IsA("Model") and not Players:GetPlayerFromCharacter(model) then
+            local humanoid = model:FindFirstChild("Humanoid")
+            if humanoid then
+                local currentHealth = humanoid.Health
+                local previous = lastHealth[model] or currentHealth
+
+                if currentHealth < previous then
+                    local damage = math.floor(previous - currentHealth)
+                    local tag = humanoid:FindFirstChild("creator")
+
+                    if tag then
+                        local val = tag.Value
+                        local isFromPlayer =
+                            (typeof(val) == "Instance" and (val == LocalPlayer or (val:IsA("Tool") and val.Parent == LocalPlayer.Character))) or
+                            (typeof(val) == "string" and val == LocalPlayer.Name)
+
+                        if isFromPlayer then
+                            showAccumulatedDamage(model, damage)
+                        end
+                    end
+                end
+                lastHealth[model] = currentHealth
+            end
+        end
+    end
+
     for id, billboard in pairs(activeBillboards) do
         local removeTime = billboard:FindFirstChild("RemoveAt")
         if removeTime and tick() > removeTime.Value then
