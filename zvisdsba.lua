@@ -39,6 +39,13 @@ local Section = Tab:CreateSection("Virtual HUD - ONLY TOGGLE 1 OR THE TEXT BUG!"
 
 -- Button untuk Damage Indicator GUI
 Tab:CreateButton({
+    Name = "Run Health Bar [GUI]",
+    Callback = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/hydzns/znscript/refs/heads/main/znscript.lua"))()
+    end
+})
+
+Tab:CreateButton({
     Name = "Run Damage Indicator [GUI]",
     Callback = function()
         loadstring(game:HttpGet("https://raw.githubusercontent.com/hydzns/ZVis/main/hitindicatorgui.lua"))()
