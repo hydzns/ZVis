@@ -79,7 +79,7 @@ local function showAccumulatedDamage(target, damage)
         activeLabels[id] = {
             label = label,
             damage = damage,
-            expireTime = tick() + 1.5
+            expireTime = tick() + 5
         }
     end
 end
