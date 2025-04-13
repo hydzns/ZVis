@@ -1,128 +1,105 @@
-local lastHealth = {}
+-- Tabel untuk menyimpan damage stacking per target
 local activeLabels = {}
-local damageLogGui = nil
-local Players = game:GetService("Players")
-local LocalPlayer = Players.LocalPlayer
-local UserInputService = game:GetService("UserInputService")
-local targetEnemy = nil
-local lastAttackTime = 0
+local player = game.Players.LocalPlayer
 
--- Coba deteksi target (bisa kamu ubah sesuai sistem combat gamemu)
-function trackTarget()
-	local char = LocalPlayer.Character
-	if not char then return end
-
-	local mouse = LocalPlayer:GetMouse()
-	mouse.Button1Down:Connect(function()
-		local target = mouse.Target
-		if target and target.Parent and target.Parent:FindFirstChild("Humanoid") then
-			local player = Players:GetPlayerFromCharacter(target.Parent)
-			if player and player ~= LocalPlayer then
-				targetEnemy = player
-				lastAttackTime = tick()
-			end
-		end
-	end)
-end
-
--- GUI setup
+-- Setup GUI
 function setupGui()
-	local gui = LocalPlayer:FindFirstChild("PlayerGui"):FindFirstChild("DamageLogGui")
-	if gui then return gui end
+    local gui = player:WaitForChild("PlayerGui"):FindFirstChild("DamageScreenGui")
+    if gui then return gui end
 
-	local screenGui = Instance.new("ScreenGui")
-	screenGui.Name = "DamageLogGui"
-	screenGui.ResetOnSpawn = false
-	screenGui.IgnoreGuiInset = true
-	screenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
+    local screenGui = Instance.new("ScreenGui")
+    screenGui.Name = "DamageScreenGui"
+    screenGui.ResetOnSpawn = false
+    screenGui.IgnoreGuiInset = true
+    screenGui.Parent = player:WaitForChild("PlayerGui")
 
-	damageLogGui = screenGui
-	return screenGui
+    return screenGui
 end
 
--- Atur posisi label agar tidak tumpuk
-function updateLabelPositions()
-	local baseY = -300
-	local spacing = 35
-	local index = 0
+-- Fungsi untuk menampilkan damage
+function showAccumulatedDamage(target, damage)
+    local id = target.UserId
+    local entry = activeLabels[id]
 
-	for _, entry in pairs(activeLabels) do
-		if entry.label and entry.label.Parent then
-			entry.label.Position = UDim2.new(0, 350, 1, baseY - (index * spacing))
-			index += 1
-		end
-	end
+    if entry and entry.label and entry.label.Parent then
+        entry.damage = entry.damage + damage
+        entry.label.Text = "-" .. tostring(entry.damage)
+
+        if entry.damage > 272 then
+            entry.label.TextColor3 = Color3.fromRGB(170, 0, 255)
+        else
+            entry.label.TextColor3 = Color3.new(1, 0, 0)
+        end
+
+        entry.expireTime = tick() + 1.5
+    else
+        local screenGui = setupGui()
+
+        local label = Instance.new("TextLabel")
+        label.Name = "DamageLabel_" .. id
+        label.Size = UDim2.new(0, 250, 0, 50)
+
+        -- Posisi vertikal berdasarkan jumlah label aktif
+        local yOffset = 0
+        for _, other in pairs(activeLabels) do
+            yOffset = yOffset + 55
+        end
+        label.Position = UDim2.new(0, 300, 1, -250 - yOffset)
+
+        label.BackgroundTransparency = 1
+        label.Text = "-" .. tostring(damage)
+        label.TextColor3 = damage > 272 and Color3.fromRGB(170, 0, 255) or Color3.new(1, 0, 0)
+        label.TextStrokeTransparency = 0
+        label.TextScaled = true
+        label.Font = Enum.Font.Arcade
+        label.TextSize = 48
+        label.Parent = screenGui
+
+        activeLabels[id] = {
+            label = label,
+            damage = damage,
+            expireTime = tick() + 1.5
+        }
+    end
 end
 
--- Show damage per enemy
-function showAccumulatedDamage(player, damage)
-	local id = player.UserId
-	local entry = activeLabels[id]
+-- Fungsi untuk mendeteksi damage yang kamu berikan ke player lain
+function monitorOutgoingDamage()
+    local lastHealth = {}
 
-	if entry and entry.label and entry.label.Parent then
-		entry.damage = entry.damage + damage
-		entry.label.Text = "-" .. tostring(entry.damage)
-		entry.label.TextColor3 = damage > 272 and Color3.fromRGB(170, 0, 255) or Color3.new(1, 0, 0)
-		entry.expireTime = tick() + 1.5
-	else
-		local screenGui = setupGui()
-		local label = Instance.new("TextLabel")
-		label.Name = "DamageLabel_" .. id
-		label.Size = UDim2.new(0, 200, 0, 30)
-		label.Position = UDim2.new(0, 350, 1, -300)
-		label.BackgroundTransparency = 1
-		label.Text = "-" .. tostring(damage)
-		label.TextColor3 = damage > 272 and Color3.fromRGB(170, 0, 255) or Color3.new(1, 0, 0)
-		label.TextStrokeTransparency = 0
-		label.TextScaled = true
-		label.Font = Enum.Font.SourceSansBold
-		label.TextSize = 30
-		label.Parent = screenGui
+    while task.wait(0.1) do
+        for _, target in pairs(game.Players:GetPlayers()) do
+            if target ~= player and target.Character then
+                local humanoid = target.Character:FindFirstChild("Humanoid")
+                if humanoid then
+                    local currentHealth = humanoid.Health
+                    local previous = lastHealth[target] or currentHealth
 
-		activeLabels[id] = {
-			label = label,
-			damage = damage,
-			expireTime = tick() + 1.5
-		}
-		updateLabelPositions()
-	end
+                    if currentHealth < previous then
+                        local damage = math.floor(previous - currentHealth)
+
+                        -- Cek apakah kamu yang menyebabkan damage
+                        local tag = humanoid:FindFirstChild("creator")
+                        if tag and tag.Value == player then
+                            showAccumulatedDamage(target, damage)
+                        end
+                    end
+
+                    lastHealth[target] = currentHealth
+                end
+            end
+        end
+
+        -- Bersihkan label yang expired
+        for id, entry in pairs(activeLabels) do
+            if tick() > entry.expireTime then
+                if entry.label then
+                    entry.label:Destroy()
+                end
+                activeLabels[id] = nil
+            end
+        end
+    end
 end
 
--- Main monitoring
-function monitorDamage()
-	while task.wait(0.1) do
-		for _, player in pairs(Players:GetPlayers()) do
-			if player ~= LocalPlayer and player.Character then
-				local humanoid = player.Character:FindFirstChild("Humanoid")
-				if humanoid then
-					local currentHealth = humanoid.Health
-					local previousHealth = lastHealth[player] or currentHealth
-
-					if currentHealth < previousHealth then
-						-- Hanya tampilkan jika player ini adalah target kita, dan baru saja kita serang
-						if targetEnemy == player and (tick() - lastAttackTime <= 2) then
-							local damage = math.floor(previousHealth - currentHealth)
-							showAccumulatedDamage(player, damage)
-						end
-					end
-
-					lastHealth[player] = currentHealth
-				end
-			end
-		end
-
-		-- Hapus label jika expired
-		for id, entry in pairs(activeLabels) do
-			if tick() > entry.expireTime then
-				if entry.label then
-					entry.label:Destroy()
-				end
-				activeLabels[id] = nil
-				updateLabelPositions()
-			end
-		end
-	end
-end
-
-trackTarget()
-monitorDamage()
+monitorOutgoingDamage()
