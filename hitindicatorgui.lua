@@ -9,12 +9,24 @@ local RunService = game:GetService("RunService")
 local Players = game:GetService("Players")
 local player = Players.LocalPlayer
 
--- Tabel untuk menyimpan damage stacking per target
 local activeLabels = {}
 local lastHealth = {}
 
--- Setup GUI
-function setupGui()
+-- Styling function
+local function getStyle(damage)
+    if damage >= 450 then
+        return Color3.fromRGB(120, 0, 0), 200
+    elseif damage >= 350 then
+        return Color3.fromRGB(100, 0, 150), 150
+    elseif damage >= 250 then
+        return Color3.fromRGB(170, 0, 255), 100
+    else
+        return Color3.new(1, 0, 0), 50
+    end
+end
+
+-- GUI setup
+local function setupGui()
     local gui = player:WaitForChild("PlayerGui"):FindFirstChild("DamageScreenGui")
     if gui then return gui end
 
@@ -27,15 +39,18 @@ function setupGui()
     return screenGui
 end
 
--- Fungsi untuk menampilkan damage
-function showAccumulatedDamage(target, damage)
+-- Show accumulated damage
+local function showAccumulatedDamage(target, damage)
     local id = target.UserId
     local entry = activeLabels[id]
 
     if entry and entry.label and entry.label.Parent then
         entry.damage = entry.damage + damage
+        local color, size = getStyle(entry.damage)
+
         entry.label.Text = "-" .. tostring(entry.damage)
-        entry.label.TextColor3 = entry.damage > 272 and Color3.fromRGB(170, 0, 255) or Color3.new(1, 0, 0)
+        entry.label.TextColor3 = color
+        entry.label.TextSize = size
         entry.expireTime = tick() + 1.5
     else
         local screenGui = setupGui()
@@ -43,7 +58,7 @@ function showAccumulatedDamage(target, damage)
         label.Name = "DamageLabel_" .. id
         label.Size = UDim2.new(0, 250, 0, 50)
 
-        -- Posisi vertikal berdasarkan jumlah label aktif
+        -- Posisi vertikal dinamis
         local yOffset = 0
         for _, other in pairs(activeLabels) do
             yOffset = yOffset + 55
@@ -52,11 +67,13 @@ function showAccumulatedDamage(target, damage)
 
         label.BackgroundTransparency = 1
         label.Text = "-" .. tostring(damage)
-        label.TextColor3 = damage > 272 and Color3.fromRGB(170, 0, 255) or Color3.new(1, 0, 0)
+
+        local color, size = getStyle(damage)
+        label.TextColor3 = color
         label.TextStrokeTransparency = 0
-        label.TextScaled = true
+        label.TextScaled = false
+        label.TextSize = size
         label.Font = Enum.Font.Arcade
-        label.TextSize = 48
         label.Parent = screenGui
 
         activeLabels[id] = {
@@ -67,7 +84,7 @@ function showAccumulatedDamage(target, damage)
     end
 end
 
--- Fungsi utama dengan koneksi tunggal
+-- Heartbeat loop
 _G.HitIndicatorConnection = RunService.Heartbeat:Connect(function()
     if not _G.HitIndicatorEnabled then return end
 
@@ -92,7 +109,7 @@ _G.HitIndicatorConnection = RunService.Heartbeat:Connect(function()
         end
     end
 
-    -- Bersihkan label yang sudah expired
+    -- Clean up expired labels
     for id, entry in pairs(activeLabels) do
         if tick() > entry.expireTime then
             if entry.label then entry.label:Destroy() end
