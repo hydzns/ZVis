@@ -47,7 +47,7 @@ local function showAccumulatedDamage(targetPlayer, damage)
 
             local removeTime = billboard:FindFirstChild("RemoveAt")
             if removeTime then
-                removeTime.Value = tick() + 1.5
+                removeTime.Value = tick() + 5
             end
         end
     else
