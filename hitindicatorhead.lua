@@ -16,13 +16,13 @@ local lastHealth = {}
 -- Fungsi styling damage
 local function getStyle(amount)
     if amount >= 450 then
-        return Color3.fromRGB(120, 0, 0), 72 -- Merah gelap, ukuran x1.5
+        return Color3.fromRGB(120, 0, 0), 200 -- Merah gelap
     elseif amount >= 350 then
-        return Color3.fromRGB(100, 0, 150), 48 -- Ungu gelap, ukuran x1
+        return Color3.fromRGB(100, 0, 150), 150 -- Ungu gelap
     elseif amount >= 250 then
-        return Color3.fromRGB(170, 0, 255), 24 -- Ungu terang, ukuran x0.5
+        return Color3.fromRGB(170, 0, 255), 100 -- Ungu terang
     else
-        return Color3.new(1, 0, 0), 24 -- Merah biasa, ukuran x0.5
+        return Color3.new(1, 0, 0), 50 -- Merah biasa
     end
 end
 
@@ -47,7 +47,7 @@ local function showAccumulatedDamage(targetPlayer, damage)
 
             local removeTime = billboard:FindFirstChild("RemoveAt")
             if removeTime then
-                removeTime.Value = tick() + 1.5
+                removeTime.Value = tick() + 3
             end
         end
     else
