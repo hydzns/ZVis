@@ -41,7 +41,7 @@ local Section = Tab:CreateSection("Virtual HUD - ONLY TOGGLE 1 OR THE TEXT BUG!"
 Tab:CreateButton({
     Name = "Run Health Bar [GUI]",
     Callback = function()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/hydzns/znscript/refs/heads/main/znscript.lua"))()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/hydzns/ZVis/refs/heads/main/healthbargui.lua"))()
     end
 })
 
