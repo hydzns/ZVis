@@ -16,13 +16,13 @@ local lastHealth = {}
 -- Fungsi styling damage
 local function getStyle(amount)
     if amount >= 450 then
-        return Color3.fromRGB(120, 0, 0), 200 -- Merah gelap
+        return Color3.fromRGB(120, 0, 0), 200
     elseif amount >= 350 then
-        return Color3.fromRGB(100, 0, 150), 150 -- Ungu gelap
+        return Color3.fromRGB(100, 0, 150), 150
     elseif amount >= 250 then
-        return Color3.fromRGB(170, 0, 255), 100 -- Ungu terang
+        return Color3.fromRGB(170, 0, 255), 100
     else
-        return Color3.new(1, 0, 0), 50 -- Merah biasa
+        return Color3.new(1, 0, 0), 50
     end
 end
 
@@ -47,11 +47,10 @@ local function showAccumulatedDamage(targetPlayer, damage)
 
             local removeTime = billboard:FindFirstChild("RemoveAt")
             if removeTime then
-                removeTime.Value = tick() + 3
+                removeTime.Value = tick() + 1.5
             end
         end
     else
-        -- Buat Billboard baru
         billboard = Instance.new("BillboardGui")
         billboard.Adornee = head
         billboard.Size = UDim2.new(0, 100, 0, 40)
@@ -75,7 +74,7 @@ local function showAccumulatedDamage(targetPlayer, damage)
 
         local removeTime = Instance.new("NumberValue")
         removeTime.Name = "RemoveAt"
-        removeTime.Value = tick() + 3
+        removeTime.Value = tick() + 5
         removeTime.Parent = billboard
 
         billboard.Parent = LocalPlayer:WaitForChild("PlayerGui")
@@ -83,7 +82,7 @@ local function showAccumulatedDamage(targetPlayer, damage)
     end
 end
 
--- Loop deteksi damage
+-- Deteksi damage
 _G.HitIndicatorConnection = RunService.Heartbeat:Connect(function()
     if not _G.HitIndicatorEnabled then return end
 
