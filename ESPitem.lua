@@ -1,58 +1,59 @@
--- ESP Gabungan + Jarak Meter
+-- ESP Gabungan Toggleable
+_G.ESPItemEnabled = true
+
 local itemNames = {
     ["Flute"] = Color3.fromRGB(255, 255, 0),
     ["Frozen Demon Horn"] = Color3.fromRGB(0, 255, 255),
     ["Katana Shard"] = Color3.fromRGB(255, 100, 100),
     ["Thread Of Denial"] = Color3.fromRGB(200, 0, 255),
-    ["Obi Sash Thing"] = Color3.fromRGB(255, 170, 0)
+    ["Obi Sash Thing"] = Color3.fromRGB(255, 170, 0),
+    ["Use Earring"] = Color3.fromRGB(255, 255, 255)
 }
 
 local player = game:GetService("Players").LocalPlayer
-local character = player.Character or player.CharacterAdded:Wait()
-local hrp = character:WaitForChild("HumanoidRootPart")
+local hrp = player.Character and player.Character:FindFirstChild("HumanoidRootPart") or nil
+if not hrp then player.CharacterAdded:Wait() hrp = player.Character:WaitForChild("HumanoidRootPart") end
 
-local function createESP(part, itemName, color)
-    local billboard = Instance.new("BillboardGui")
-    billboard.Name = "ItemESP"
-    billboard.Adornee = part
-    billboard.Size = UDim2.new(0, 100, 0, 50)
-    billboard.AlwaysOnTop = true
-    billboard.Parent = part
+local function createESP(part, name, color)
+    local bb = Instance.new("BillboardGui")
+    bb.Name = "ItemESP"
+    bb.Adornee = part
+    bb.Size = UDim2.new(0, 100, 0, 50)
+    bb.AlwaysOnTop = true
+    bb.Parent = part
 
-    local label = Instance.new("TextLabel")
+    local label = Instance.new("TextLabel", bb)
     label.Size = UDim2.new(1, 0, 0.6, 0)
     label.Position = UDim2.new(0, 0, 0, 0)
     label.BackgroundTransparency = 1
-    label.Text = itemName
+    label.Text = name
     label.TextColor3 = color
-    label.TextStrokeTransparency = 0
     label.TextScaled = true
     label.Font = Enum.Font.GothamBold
-    label.Parent = billboard
+    label.TextStrokeTransparency = 0
 
-    local distanceLabel = Instance.new("TextLabel")
-    distanceLabel.Size = UDim2.new(1, 0, 0.4, 0)
-    distanceLabel.Position = UDim2.new(0, 0, 0.6, 0)
-    distanceLabel.BackgroundTransparency = 1
-    distanceLabel.Text = "0m away"
-    distanceLabel.TextColor3 = Color3.new(1, 1, 1)
-    distanceLabel.TextScaled = true
-    distanceLabel.TextStrokeTransparency = 0.5
-    distanceLabel.Font = Enum.Font.Gotham
-    distanceLabel.Parent = billboard
+    local distance = Instance.new("TextLabel", bb)
+    distance.Size = UDim2.new(1, 0, 0.4, 0)
+    distance.Position = UDim2.new(0, 0, 0.6, 0)
+    distance.BackgroundTransparency = 1
+    distance.TextColor3 = Color3.new(1, 1, 1)
+    distance.Font = Enum.Font.Gotham
+    distance.TextScaled = true
+    distance.Text = "..."
 
-    -- Perbarui jarak secara real-time
     game:GetService("RunService").RenderStepped:Connect(function()
-        if hrp and part and part:IsDescendantOf(workspace) then
+        if _G.ESPItemEnabled and hrp and part then
             local dist = math.floor((hrp.Position - part.Position).Magnitude)
-            distanceLabel.Text = tostring(dist) .. "m away"
+            distance.Text = tostring(dist) .. "m away"
+        elseif not _G.ESPItemEnabled and bb then
+            bb:Destroy()
         end
     end)
 end
 
-local function checkAndCreateESP(tool)
+local function scan(tool)
     local color = itemNames[tool.Name]
-    if color then
+    if color and _G.ESPItemEnabled then
         local handle = tool:FindFirstChild("Handle")
         if handle and not handle:FindFirstChild("ItemESP") then
             createESP(handle, tool.Name, color)
@@ -60,18 +61,15 @@ local function checkAndCreateESP(tool)
     end
 end
 
--- Cek yang sudah ada di workspace
 for _, obj in ipairs(workspace:GetDescendants()) do
     if obj:IsA("Tool") and itemNames[obj.Name] then
-        checkAndCreateESP(obj)
+        scan(obj)
     end
 end
 
--- Deteksi item baru
 workspace.DescendantAdded:Connect(function(obj)
     if obj:IsA("Tool") and itemNames[obj.Name] then
-        task.delay(0.1, function()
-            checkAndCreateESP(obj)
-        end)
+        task.wait(0.1)
+        scan(obj)
     end
 end)
