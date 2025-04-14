@@ -37,7 +37,7 @@ local Window = Rayfield:CreateWindow({
 local Tab = Window:CreateTab("Utility", 4483362458)
 local Section = Tab:CreateSection("Virtual HUD - ONLY TOGGLE 1 OR THE TEXT BUG!")
 
--- Button untuk Damage Indicator GUI
+-- Button untuk Health Bar GUI
 Tab:CreateButton({
     Name = "Run Health Bar [GUI]",
     Callback = function()
@@ -45,6 +45,7 @@ Tab:CreateButton({
     end
 })
 
+-- Button untuk Damage Indicator GUI
 Tab:CreateButton({
     Name = "Run Damage Indicator [GUI]",
     Callback = function()
@@ -58,6 +59,24 @@ Tab:CreateButton({
     Callback = function()
         loadstring(game:HttpGet("https://raw.githubusercontent.com/hydzns/ZVis/main/hitindicatorhead.lua"))()
     end
+})
+
+-- 🔁 Toggle untuk ESP Item
+local espConnection = nil
+local espEnabled = false
+
+Tab:CreateToggle({
+    Name = "Toggle ESP Item",
+    CurrentValue = false,
+    Flag = "ToggleESPItem",
+    Callback = function(Value)
+        if Value then
+            _G.ESPItemEnabled = true
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/hydzns/ZVis/refs/heads/main/ESPitem.lua"))()
+        else
+            _G.ESPItemEnabled = false
+        end
+    end,
 })
 
 Rayfield:LoadConfiguration()
