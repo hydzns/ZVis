@@ -34,10 +34,10 @@ local Window = Rayfield:CreateWindow({
     }
 })
 
+-- 👾 Tab: Utility
 local Tab = Window:CreateTab("Utility", 4483362458)
 local Section = Tab:CreateSection("Virtual HUD - ONLY TOGGLE 1 OR THE TEXT BUG!")
 
--- Button untuk Health Bar GUI
 Tab:CreateButton({
     Name = "Run Health Bar [GUI]",
     Callback = function()
@@ -45,7 +45,6 @@ Tab:CreateButton({
     end
 })
 
--- Button untuk Damage Indicator GUI
 Tab:CreateButton({
     Name = "Run Damage Indicator [GUI]",
     Callback = function()
@@ -53,7 +52,6 @@ Tab:CreateButton({
     end
 })
 
--- Button untuk Damage Indicator Head
 Tab:CreateButton({
     Name = "Run Damage Indicator [HEAD]",
     Callback = function()
@@ -61,7 +59,7 @@ Tab:CreateButton({
     end
 })
 
--- 🔁 Toggle untuk ESP Item
+-- 🔁 Toggle ESP Item
 local espConnection = nil
 local espEnabled = false
 
@@ -76,6 +74,27 @@ Tab:CreateToggle({
         else
             _G.ESPItemEnabled = false
         end
+    end,
+})
+
+-- 🌟 Tab Baru: Adv Menu
+local AdvTab = Window:CreateTab("Adv Menu", 4483362458)
+AdvTab:CreateSection("Player Info")
+
+AdvTab:CreateButton({
+    Name = "Show Ranked Point",
+    Callback = function()
+        local player = game.Players.LocalPlayer
+        local charStats = player:FindFirstChild("CharStats")
+        local ranked = charStats and charStats:FindFirstChild("RANKED1")
+        local value = ranked and ranked.Value or "N/A"
+
+        Rayfield:Notify({
+            Title = "Ranked Points",
+            Content = "Current Ranked Point: " .. tostring(value),
+            Duration = 5,
+            Image = 4483362458,
+        })
     end,
 })
 
