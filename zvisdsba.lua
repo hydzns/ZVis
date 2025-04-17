@@ -88,7 +88,7 @@ AdvTab:CreateButton({
 })
 
 AdvTab:CreateButton({
-    Name = "Show Ranked Points (Rounded)",
+    Name = "Show Ranked Points",
     Callback = function()
         local success, err = pcall(function()
             loadstring(game:HttpGet("https://raw.githubusercontent.com/hydzns/ZVis/main/showrankpoint.lua"))()
