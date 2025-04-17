@@ -6,22 +6,18 @@ local Window = Rayfield:CreateWindow({
     LoadingTitle = "ZVis - DSBA",
     LoadingSubtitle = "ONLY VISUAL AND NO HACKS!",
     Theme = "Default",
-
     DisableRayfieldPrompts = false,
     DisableBuildWarnings = false,
-
     ConfigurationSaving = {
         Enabled = true,
         FolderName = nil,
         FileName = "ZVis"
     },
-
     Discord = {
         Enabled = false,
         Invite = "noinvitelink",
         RememberJoins = true
     },
-
     KeySystem = false,
     KeySettings = {
         Title = "Untitled",
@@ -34,14 +30,13 @@ local Window = Rayfield:CreateWindow({
     }
 })
 
--- 👾 Tab: Utility
 local Tab = Window:CreateTab("Utility", 4483362458)
 local Section = Tab:CreateSection("Virtual HUD - ONLY TOGGLE 1 OR THE TEXT BUG!")
 
 Tab:CreateButton({
     Name = "Run Health Bar [GUI]",
     Callback = function()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/hydzns/ZVis/refs/heads/main/healthbargui.lua"))()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/hydzns/ZVis/main/healthbargui.lua"))()
     end
 })
 
@@ -59,7 +54,6 @@ Tab:CreateButton({
     end
 })
 
--- 🔁 Toggle ESP Item
 local espConnection = nil
 local espEnabled = false
 
@@ -70,28 +64,37 @@ Tab:CreateToggle({
     Callback = function(Value)
         if Value then
             _G.ESPItemEnabled = true
-            loadstring(game:HttpGet("https://raw.githubusercontent.com/hydzns/ZVis/refs/heads/main/ESPitem.lua"))()
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/hydzns/ZVis/main/ESPitem.lua"))()
         else
             _G.ESPItemEnabled = false
         end
     end,
 })
 
--- 🌟 Tab Baru: Adv Menu
 local AdvTab = Window:CreateTab("Adv Menu", 4483362458)
 AdvTab:CreateSection("Player Info")
 
 AdvTab:CreateButton({
-    Name = "Show Ranked Points (Rounded)",
+    Name = "Show Player Level",
     Callback = function()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/hydzns/ZVis/refs/heads/main/showlevel.lua"))()
+        local success, err = pcall(function()
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/hydzns/ZVis/main/showlevel.lua"))()
+        end)
+        if not success then
+            warn("Failed to load showlevel.lua:", err)
+        end
     end,
 })
 
 AdvTab:CreateButton({
     Name = "Show Ranked Points (Rounded)",
     Callback = function()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/hydzns/ZVis/refs/heads/main/showrankpoint.lua"))()
+        local success, err = pcall(function()
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/hydzns/ZVis/main/showrankpoint.lua"))()
+        end)
+        if not success then
+            warn("Failed to load showrankpoint.lua:", err)
+        end
     end,
 })
 
