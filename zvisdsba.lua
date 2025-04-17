@@ -32,7 +32,7 @@ local Window = Rayfield:CreateWindow({
 })
 
 local Tab = Window:CreateTab("Utility", 4483362458)
-local Section = Tab:CreateSection("Virtual HUD - ONLY TOGGLE 1 OR THE TEXT BUG!")
+local Section = Tab:CreateSection("Virtual HUD")
 
 Tab:CreateButton({
     Name = "Health Bar [Multi-Player]",
