@@ -1,7 +1,4 @@
-AdvTab:CreateButton({
-    Name = "Show Ranked Points",
-    Callback = function()
-        local player = game.Players.LocalPlayer
+local player = game.Players.LocalPlayer
         local data = player:FindFirstChild("Data")
         local coins = data and data:FindFirstChild("Christmas_Coins")
         local value = coins and coins.Value or "N/A"
