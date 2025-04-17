@@ -35,44 +35,27 @@ local Tab = Window:CreateTab("Utility", 4483362458)
 local Section = Tab:CreateSection("Virtual HUD - ONLY TOGGLE 1 OR THE TEXT BUG!")
 
 Tab:CreateButton({
-    Name = "Run Health Bar [GUI]",
+    Name = "Health Bar [Multi-Player]",
     Callback = function()
         loadstring(game:HttpGet("https://raw.githubusercontent.com/hydzns/ZVis/main/healthbargui.lua"))()
     end
 })
 
 Tab:CreateButton({
-    Name = "Run Damage Indicator [GUI]",
+    Name = "Run Damage Indicator [Screen]",
     Callback = function()
         loadstring(game:HttpGet("https://raw.githubusercontent.com/hydzns/ZVis/main/hitindicatorgui.lua"))()
     end
 })
 
 Tab:CreateButton({
-    Name = "Run Damage Indicator [HEAD]",
+    Name = "Run Damage Indicator [Player-Head]",
     Callback = function()
         loadstring(game:HttpGet("https://raw.githubusercontent.com/hydzns/ZVis/main/hitindicatorhead.lua"))()
     end
 })
 
-local espConnection = nil
-local espEnabled = false
-
-Tab:CreateToggle({
-    Name = "Toggle ESP Item",
-    CurrentValue = false,
-    Flag = "ToggleESPItem",
-    Callback = function(Value)
-        if Value then
-            _G.ESPItemEnabled = true
-            loadstring(game:HttpGet("https://raw.githubusercontent.com/hydzns/ZVis/main/ESPitem.lua"))()
-        else
-            _G.ESPItemEnabled = false
-        end
-    end,
-})
-
-local AdvTab = Window:CreateTab("Adv Menu", 4483362458)
+local AdvTab = Window:CreateTab("Info Menu", 4483362458)
 AdvTab:CreateSection("Player Info")
 
 AdvTab:CreateButton({
