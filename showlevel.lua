@@ -1,3 +1,5 @@
+local Rayfield = _G.Rayfield
+
 local player = game.Players.LocalPlayer
 local data = player:FindFirstChild("Data")
 local level = data and data:FindFirstChild("Level")
