@@ -2,11 +2,11 @@ local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 _G.Rayfield = Rayfield
 
 local Window = Rayfield:CreateWindow({
-    Name = "ZVis - DSBA",
+    Name = "ZVision - DSBA",
     Icon = 0,
-    LoadingTitle = "ZVis - DSBA",
-    LoadingSubtitle = "ONLY VISUAL AND NO HACKS!",
-    Theme = "Default",
+    LoadingTitle = "By ZVision",
+    LoadingSubtitle = "ONLY VISUAL",
+    Theme = "Abyss",
     DisableRayfieldPrompts = false,
     DisableBuildWarnings = false,
     ConfigurationSaving = {
