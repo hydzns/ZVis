@@ -4,7 +4,6 @@ local LocalPlayer = Players.LocalPlayer
 local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
 local cdsFolder = LocalPlayer:WaitForChild("cds")
 
--- Daftar cooldown yang akan diabaikan
 local ignoreList = {
 	["NormalAttack"] = true,
 	["Dash"] = true,
@@ -12,7 +11,6 @@ local ignoreList = {
 	["blockstart"] = true
 }
 
--- UI Setup
 local screenGui = Instance.new("ScreenGui")
 screenGui.Name = "CooldownDisplay"
 screenGui.Parent = PlayerGui
@@ -32,22 +30,36 @@ layout.SortOrder = Enum.SortOrder.LayoutOrder
 layout.Padding = UDim.new(0, 10)
 layout.Parent = container
 
--- Fungsi untuk membuat label cooldown
+-- Fungsi pewarnaan teks CD
+local function getColorCode(percent)
+	if percent > 0.6 then
+		return "rgb(255, 60, 60)" -- Merah
+	elseif percent > 0.3 then
+		return "rgb(255, 200, 0)" -- Kuning
+	else
+		return "rgb(0, 255, 0)" -- Hijau
+	end
+end
+
+-- Fungsi membuat label cooldown
 local function createCooldownLabel(cdObject)
 	if ignoreList[cdObject.Name] then return end
 
 	local label = Instance.new("TextLabel")
-	label.Size = UDim2.new(0, 150, 1, 0)
+	label.Size = UDim2.new(0, 160, 1, 0)
 	label.BackgroundTransparency = 0.2
 	label.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-	label.TextColor3 = Color3.new(1, 1, 1)
 	label.Font = Enum.Font.Arcade
 	label.TextScaled = true
+	label.RichText = true
+	label.TextColor3 = Color3.new(1, 1, 1)
 	label.Text = ""
 	label.Name = cdObject.Name
 	label.Parent = container
 
 	local startTime = os.clock()
+	local duration = cdObject.Value
+
 	local connection
 	connection = RunService.RenderStepped:Connect(function()
 		if not cdObject or not cdObject.Parent then
@@ -56,8 +68,8 @@ local function createCooldownLabel(cdObject)
 			return
 		end
 
-		local cdValue = cdObject:FindFirstChild("Value") or cdObject
-		local remaining = math.max(0, cdValue.Value - (os.clock() - startTime))
+		local elapsed = os.clock() - startTime
+		local remaining = math.max(0, duration - elapsed)
 
 		if remaining <= 0 then
 			label:Destroy()
@@ -65,11 +77,15 @@ local function createCooldownLabel(cdObject)
 			return
 		end
 
-		label.Text = cdObject.Name .. "\n" .. math.ceil(remaining) .. "s"
+		local percentLeft = remaining / duration
+		local colorCode = getColorCode(percentLeft)
+		local rounded = math.ceil(remaining)
+
+		label.Text = cdObject.Name .. "\n<font color=\"" .. colorCode .. "\" size=\"20\">" .. rounded .. "s</font>"
 	end)
 end
 
--- Pantau cooldown baru
+-- Saat ada cooldown baru
 cdsFolder.ChildAdded:Connect(function(child)
 	if child:IsA("NumberValue") then
 		createCooldownLabel(child)
