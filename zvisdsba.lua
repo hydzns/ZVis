@@ -5,8 +5,8 @@ local Window = Rayfield:CreateWindow({
     Name = "ZVision - DSBA",
     Icon = 0,
     LoadingTitle = "By ZVision",
-    LoadingSubtitle = "ONLY VISUAL",
-    Theme = "Blood",
+    LoadingSubtitle = "Visual Enchancer",
+    Theme = "Default",
     DisableRayfieldPrompts = false,
     DisableBuildWarnings = false,
     ConfigurationSaving = {
@@ -27,7 +27,7 @@ local Window = Rayfield:CreateWindow({
         FileName = "Key",
         SaveKey = true,
         GrabKeyFromSite = false,
-        Key = {"VENOMONTOP"}
+        Key = {"VNM"}
     }
 })
 
@@ -42,17 +42,24 @@ Tab:CreateButton({
 })
 
 Tab:CreateButton({
-    Name = "Run Damage Indicator [Screen]",
+    Name = "Damage Indicator [Screen]",
     Callback = function()
         loadstring(game:HttpGet("https://raw.githubusercontent.com/hydzns/ZVis/main/hitindicatorgui.lua"))()
     end
 })
 
 Tab:CreateButton({
-    Name = "Run Damage Indicator [Player-Head]",
+    Name = "Damage Indicator [Player-Head]",
     Callback = function()
         loadstring(game:HttpGet("https://raw.githubusercontent.com/hydzns/ZVis/main/hitindicatorhead.lua"))()
     end
+})
+
+Tab:CreateButton({
+    Name = "Better Cooldowns",
+    Callback = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/hydzns/ZVis/refs/heads/main/bettercd.lua"))()
+        end
 })
 
 local AdvTab = Window:CreateTab("Info Menu", 4483362458)
