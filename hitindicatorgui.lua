@@ -9,21 +9,14 @@ local RunService = game:GetService("RunService")
 local Players = game:GetService("Players")
 local player = Players.LocalPlayer
 
-local activeLabels = {}
+local screenGui = player:WaitForChild("PlayerGui"):FindFirstChild("DamageScreenGui") or Instance.new("ScreenGui", player:WaitForChild("PlayerGui"))
+screenGui.Name = "DamageScreenGui"
+screenGui.ResetOnSpawn = false
+screenGui.IgnoreGuiInset = true
+
+local trackedTargets = {}
 local lastHealth = {}
-
-local function setupGui()
-    local gui = player:WaitForChild("PlayerGui"):FindFirstChild("DamageScreenGui")
-    if gui then return gui end
-
-    local screenGui = Instance.new("ScreenGui")
-    screenGui.Name = "DamageScreenGui"
-    screenGui.ResetOnSpawn = false
-    screenGui.IgnoreGuiInset = true
-    screenGui.Parent = player:WaitForChild("PlayerGui")
-
-    return screenGui
-end
+local activeLabels = {}
 
 local function getStyle(damage)
     if damage >= 450 then
@@ -37,30 +30,22 @@ local function getStyle(damage)
     end
 end
 
-local function showAccumulatedDamage(target, damage)
-    local id = target:GetDebugId()
-    local entry = activeLabels[id]
+local function showDamage(damage)
+    local existingLabel = activeLabels["Main"]
+    if existingLabel and existingLabel.Parent then
+        local old = tonumber(existingLabel.Text:match("%d+")) or 0
+        local newDamage = old + damage
+        existingLabel.Text = "-" .. tostring(newDamage)
 
-    if entry and entry.label and entry.label.Parent then
-        entry.damage = entry.damage + damage
-        entry.label.Text = "-" .. tostring(entry.damage)
-
-        local color, size = getStyle(entry.damage)
-        entry.label.TextColor3 = color
-        entry.label.TextSize = size
-        entry.expireTime = tick() + 5
+        local color, size = getStyle(newDamage)
+        existingLabel.TextColor3 = color
+        existingLabel.TextSize = size
     else
-        local screenGui = setupGui()
         local label = Instance.new("TextLabel")
-        label.Name = "DamageLabel_" .. id
+        label.Name = "DamageLabel_Main"
         label.Size = UDim2.new(0, 250, 0, 50)
-
-        local yOffset = 0
-        for _, other in pairs(activeLabels) do
-            yOffset += 55
-        end
-        label.Position = UDim2.new(0, 300, 1, -250 - yOffset)
-
+        label.Position = UDim2.new(0.5, -125, 0.7, 0)
+        label.AnchorPoint = Vector2.new(0.5, 0)
         label.BackgroundTransparency = 1
         label.Text = "-" .. tostring(damage)
 
@@ -72,76 +57,74 @@ local function showAccumulatedDamage(target, damage)
         label.TextSize = size
         label.Parent = screenGui
 
-        activeLabels[id] = {
-            label = label,
-            damage = damage,
-            expireTime = tick() + 5
-        }
+        activeLabels["Main"] = label
+
+        delay(5, function()
+            if label then label:Destroy() end
+            activeLabels["Main"] = nil
+        end)
     end
 end
+
+local function trackHumanoid(model)
+    if not model:IsA("Model") or model == player.Character then return end
+    local humanoid = model:FindFirstChildWhichIsA("Humanoid")
+    if humanoid and not trackedTargets[model] then
+        trackedTargets[model] = humanoid
+        lastHealth[model] = humanoid.Health
+    end
+end
+
+-- Inisialisasi semua NPC dan player di workspace
+for _, inst in ipairs(workspace:GetDescendants()) do
+    trackHumanoid(inst)
+end
+
+-- Jika NPC/player baru muncul
+workspace.DescendantAdded:Connect(function(child)
+    task.defer(function()
+        trackHumanoid(child)
+    end)
+end)
 
 _G.HitIndicatorConnection = RunService.Heartbeat:Connect(function()
     if not _G.HitIndicatorEnabled then return end
 
-    for _, target in pairs(Players:GetPlayers()) do
-        if target ~= player and target.Character then
-            local humanoid = target.Character:FindFirstChild("Humanoid")
-            if humanoid then
-                local currentHealth = humanoid.Health
-                local previous = lastHealth[target] or currentHealth
+    for model, humanoid in pairs(trackedTargets) do
+        if humanoid and humanoid.Parent then
+            local current = humanoid.Health
+            local previous = lastHealth[model] or current
 
-                if currentHealth < previous then
-                    local damage = math.floor(previous - currentHealth)
-                    local tag = humanoid:FindFirstChild("creator")
+            if current < previous then
+                local damage = math.floor(previous - current)
 
-                    if tag then
-                        local val = tag.Value
-                        local isFromPlayer =
-                            (typeof(val) == "Instance" and (val == player or (val:IsA("Tool") and val.Parent == player.Character))) or
-                            (typeof(val) == "string" and val == player.Name)
-
-                        if isFromPlayer then
-                            showAccumulatedDamage(target, damage)
+                -- Creator tag validasi
+                local tag = humanoid:FindFirstChild("creator")
+                if not tag then
+                    -- fallback delay
+                    for _, obj in ipairs(humanoid:GetChildren()) do
+                        if obj.Name == "creator" then
+                            tag = obj
+                            break
                         end
                     end
                 end
-                lastHealth[target] = currentHealth
-            end
-        end
-    end
 
-    -- Check NPCs (humanoids in Workspace but not Players)
-    for _, model in pairs(workspace:GetChildren()) do
-        if model:IsA("Model") and not Players:GetPlayerFromCharacter(model) then
-            local humanoid = model:FindFirstChild("Humanoid")
-            if humanoid then
-                local currentHealth = humanoid.Health
-                local previous = lastHealth[model] or currentHealth
-
-                if currentHealth < previous then
-                    local damage = math.floor(previous - currentHealth)
-                    local tag = humanoid:FindFirstChild("creator")
-
-                    if tag then
-                        local val = tag.Value
-                        local isFromPlayer =
-                            (typeof(val) == "Instance" and (val == player or (val:IsA("Tool") and val.Parent == player.Character))) or
-                            (typeof(val) == "string" and val == player.Name)
-
-                        if isFromPlayer then
-                            showAccumulatedDamage(model, damage)
-                        end
-                    end
+                local isFromLocalPlayer = false
+                if tag and tag.Value then
+                    local val = tag.Value
+                    isFromLocalPlayer =
+                        (val == player) or
+                        (typeof(val) == "Instance" and val:IsA("Tool") and val.Parent == player.Character) or
+                        (typeof(val) == "string" and val == player.Name)
                 end
-                lastHealth[model] = currentHealth
-            end
-        end
-    end
 
-    for id, entry in pairs(activeLabels) do
-        if tick() > entry.expireTime then
-            if entry.label then entry.label:Destroy() end
-            activeLabels[id] = nil
+                if isFromLocalPlayer then
+                    showDamage(damage)
+                end
+            end
+
+            lastHealth[model] = current
         end
     end
 end)
