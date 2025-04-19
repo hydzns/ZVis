@@ -42,14 +42,14 @@ Tab:CreateButton({
 })
 
 Tab:CreateButton({
-    Name = "Damage Indicator [Screen]",
+    Name = "Damage Indicator NPC + Player [Screen]",
     Callback = function()
         loadstring(game:HttpGet("https://raw.githubusercontent.com/hydzns/ZVis/main/hitindicatorgui.lua"))()
     end
 })
 
 Tab:CreateButton({
-    Name = "Damage Indicator [Player-Head]",
+    Name = "Damage Indicator [Player-Head-Only]",
     Callback = function()
         loadstring(game:HttpGet("https://raw.githubusercontent.com/hydzns/ZVis/main/hitindicatorhead.lua"))()
     end
