@@ -89,4 +89,44 @@ AdvTab:CreateButton({
     end,
 })
 
+local Hacks = Window:CreateTab("TP", 4483362458)
+Hacks:CreateSection("USE TP SLOWLY!")
+
+Hacks:CreateButton({
+    Name = "TP Flame",
+    Callback = function()
+        pcall(function()
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/znhacks/znvision/main/tpflame.lua"))()
+        end)
+    end,
+})
+
+Hacks:CreateButton({
+    Name = "TP Passive",
+    Callback = function()
+        pcall(function()
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/znhacks/znvision/main/tppassive.lua"))()
+        end)
+    end,
+})
+
+Hacks:CreateButton({
+    Name = "TP Yori",
+    Callback = function()
+        pcall(function()
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/znhacks/znvision/main/tpyori.lua"))()
+        end)
+    end,
+})
+
+Hacks:CreateButton({
+    Name = "TP Yukioni",
+    Callback = function()
+        pcall(function()
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/znhacks/znvision/main/tpyukioni.lua"))()
+        end)
+    end,
+})
+
+
 Rayfield:LoadConfiguration()
