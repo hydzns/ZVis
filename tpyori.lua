@@ -9,7 +9,7 @@ local function teleportSmooth(pos)
 		local goal = {}
 		goal.CFrame = CFrame.new(pos)
 
-		local tweenInfo = TweenInfo.new(1.5, Enum.EasingStyle.Linear) -- 1.5 detik, bisa kamu ubah
+		local tweenInfo = TweenInfo.new(0.5, Enum.EasingStyle.Linear) -- Ubah ke 0.5 detik
 		local tween = TweenService:Create(hrp, tweenInfo, goal)
 		tween:Play()
 	end
