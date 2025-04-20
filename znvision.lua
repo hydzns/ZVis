@@ -27,39 +27,39 @@ local Window = Rayfield:CreateWindow({
         FileName = "Key",
         SaveKey = true,
         GrabKeyFromSite = false,
-        Key = {"VNM"}
+        Key = {"ZEN"}
     }
 })
 
-local Tab = Window:CreateTab("Utility", 4483362458)
-local Section = Tab:CreateSection("Virtual HUD")
+local Util = Window:CreateTab("Utility", 4483362458)
+Util:CreateSection("Visual")
 
-Tab:CreateButton({
+Util:CreateButton({
     Name = "Health Bar [Multi-Player]",
     Callback = function()
         loadstring(game:HttpGet("https://raw.githubusercontent.com/hydzns/ZVis/main/healthbargui.lua"))()
     end
 })
 
-Tab:CreateButton({
+Util:CreateButton({
     Name = "Damage Indicator NPC + Player [Screen]",
     Callback = function()
         loadstring(game:HttpGet("https://raw.githubusercontent.com/hydzns/ZVis/main/hitindicatorgui.lua"))()
     end
 })
 
-Tab:CreateButton({
+Util:CreateButton({
     Name = "Damage Indicator [Player-Head-Only]",
     Callback = function()
         loadstring(game:HttpGet("https://raw.githubusercontent.com/hydzns/ZVis/main/hitindicatorhead.lua"))()
     end
 })
 
-Tab:CreateButton({
+Util:CreateButton({
     Name = "Better Cooldowns",
     Callback = function()
         loadstring(game:HttpGet("https://raw.githubusercontent.com/hydzns/ZVis/refs/heads/main/bettercd.lua"))()
-        end
+    end
 })
 
 local AdvTab = Window:CreateTab("Info Menu", 4483362458)
