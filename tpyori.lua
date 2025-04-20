@@ -1,18 +1,17 @@
 local Players = game:GetService("Players")
-local TweenService = game:GetService("TweenService")
-local LocalPlayer = Players.LocalPlayer
+local RunService = game:GetService("RunService")
+local hrp = Players.LocalPlayer.Character or Players.LocalPlayer.CharacterAdded:Wait()
+hrp = hrp:WaitForChild("HumanoidRootPart")
 
-local function teleportSmooth(pos)
-	local character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
-	local hrp = character:WaitForChild("HumanoidRootPart", 5)
-	if hrp then
-		local goal = {}
-		goal.CFrame = CFrame.new(pos)
+local start = hrp.Position
+local target = Vector3.new(180, 1067, 1985)
+local time = 2
+local elapsed = 0
 
-		local tweenInfo = TweenInfo.new(0.5, Enum.EasingStyle.Linear) -- Ubah ke 0.5 detik
-		local tween = TweenService:Create(hrp, tweenInfo, goal)
-		tween:Play()
-	end
-end
-
-teleportSmooth(Vector3.new(180, 1067, 1985))
+local conn
+conn = RunService.RenderStepped:Connect(function(dt)
+	elapsed += dt
+	local alpha = math.clamp(elapsed / time, 0, 1)
+	hrp.CFrame = CFrame.new(start:Lerp(target, alpha))
+	if alpha >= 1 then conn:Disconnect() end
+end)
