@@ -1,66 +1,128 @@
-Util:CreateToggle({
+local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+_G.Rayfield = Rayfield
+
+local Window = Rayfield:CreateWindow({
+    Name = "ZVision - DSBA",
+    Icon = 0,
+    LoadingTitle = "By ZVision",
+    LoadingSubtitle = "Visual Enchancer",
+    Theme = "Default",
+    DisableRayfieldPrompts = false,
+    DisableBuildWarnings = false,
+    ConfigurationSaving = {
+        Enabled = true,
+        FolderName = nil,
+        FileName = "ZVis"
+    },
+    Discord = {
+        Enabled = false,
+        Invite = "noinvitelink",
+        RememberJoins = true
+    },
+    KeySystem = true,
+    KeySettings = {
+        Title = "ZVision",
+        Subtitle = "Key System",
+        Note = "Only one knows the key",
+        FileName = "Key",
+        SaveKey = true,
+        GrabKeyFromSite = false,
+        Key = {"ZEN"}
+    }
+})
+
+local Util = Window:CreateTab("Utility", 4483362458)
+Util:CreateSection("Tools")
+
+Util:CreateButton({
     Name = "Auto Parry [Strong Attack Only]",
-    CurrentValue = false,
-    Flag = "AutoParryToggle",
-    Callback = function(state)
-        _G.AutoParryEnabled = state
-
-        if state then
-            if _G.AutoParryConnection then
-                _G.AutoParryConnection:Disconnect()
-            end
-
-            local Players = game:GetService("Players")
-            local RunService = game:GetService("RunService")
-            local VirtualInputManager = game:GetService("VirtualInputManager")
-            local LocalPlayer = Players.LocalPlayer
-            local debounce = {}
-            local cooldown = 5.2
-
-            local function smartParry()
-                if _G.ParryLock then return end
-                _G.ParryLock = true
-
-                VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.F, false, game)
-                task.wait(0.6)
-                VirtualInputManager:SendKeyEvent(false, Enum.KeyCode.F, false, game)
-
-                _G.ParryLock = false
-            end
-
-            _G.AutoParryConnection = RunService.Heartbeat:Connect(function()
-                if not _G.AutoParryEnabled then return end
-
-                for _, plr in ipairs(Players:GetPlayers()) do
-                    if plr ~= LocalPlayer and plr.Character and plr.Character:FindFirstChild("HumanoidRootPart") then
-                        local myHRP = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
-                        local theirHRP = plr.Character:FindFirstChild("HumanoidRootPart")
-                        if myHRP and theirHRP then
-                            local dist = (theirHRP.Position - myHRP.Position).Magnitude
-                            if dist < 10 then
-                                local cds = plr:FindFirstChild("cds")
-                                if cds then
-                                    local strong = cds:FindFirstChild("StrongAttack")
-                                    if strong and strong.Value > 0 then
-                                        local now = tick()
-                                        local last = debounce[plr] or 0
-
-                                        if now - last > cooldown then
-                                            debounce[plr] = now
-                                            task.delay(0.15, smartParry)
-                                        end
-                                    end
-                                end
-                            end
-                        end
-                    end
-                end
-            end)
-        else
-            if _G.AutoParryConnection then
-                _G.AutoParryConnection:Disconnect()
-                _G.AutoParryConnection = nil
-            end
-        end
+    Callback = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/znhacks/znvision/refs/heads/main/parry.lua"))()
     end
 })
+
+Util:CreateButton({
+    Name = "Health Bar [Multi-Player]",
+    Callback = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/znhacks/znvision/main/healthbargui.lua"))()
+    end
+})
+
+Util:CreateButton({
+    Name = "Damage Indicator NPC + Player [Screen]",
+    Callback = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/znhacks/znvision/main/hitindicatorgui.lua"))()
+    end
+})
+
+Util:CreateButton({
+    Name = "Damage Indicator [Player-Head-Only]",
+    Callback = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/znhacks/znvision/main/hitindicatorhead.lua"))()
+    end
+})
+
+Util:CreateButton({
+    Name = "Better Cooldowns",
+    Callback = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/znhacks/znvision/refs/heads/main/bettercd.lua"))()
+    end
+})
+
+local AdvTab = Window:CreateTab("Info Menu", 4483362458)
+AdvTab:CreateSection("Player Info")
+
+AdvTab:CreateButton({
+    Name = "Show Player Level",
+    Callback = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/znhacks/znvision/main/showlevel.lua"))()
+    end,
+})
+
+AdvTab:CreateButton({
+    Name = "Show Ranked Points",
+    Callback = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/znhacks/znvision/main/showrankpoint.lua"))()
+    end,
+})
+
+local Hacks = Window:CreateTab("TP", 4483362458)
+Hacks:CreateSection("USE TP SLOWLY!")
+
+Hacks:CreateButton({
+    Name = "TP Flame",
+    Callback = function()
+        pcall(function()
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/znhacks/znvision/main/tpflame.lua"))()
+        end)
+    end,
+})
+
+Hacks:CreateButton({
+    Name = "TP Passive",
+    Callback = function()
+        pcall(function()
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/znhacks/znvision/main/tppassive.lua"))()
+        end)
+    end,
+})
+
+Hacks:CreateButton({
+    Name = "TP Yori",
+    Callback = function()
+        pcall(function()
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/znhacks/znvision/main/tpyori.lua"))()
+        end)
+    end,
+})
+
+Hacks:CreateButton({
+    Name = "TP Yukioni",
+    Callback = function()
+        pcall(function()
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/znhacks/znvision/main/tpyukioni.lua"))()
+        end)
+    end,
+})
+
+Rayfield:LoadConfiguration()
