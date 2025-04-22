@@ -32,33 +32,40 @@ local Window = Rayfield:CreateWindow({
 })
 
 local Util = Window:CreateTab("Utility", 4483362458)
-Util:CreateSection("Visual")
+Util:CreateSection("Tools")
+
+Util:CreateButton({
+    Name = "Auto Parry [Strong Attack Only]",
+    Callback = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/znhacks/znvision/refs/heads/main/parry.lua"))()
+    end
+})
 
 Util:CreateButton({
     Name = "Health Bar [Multi-Player]",
     Callback = function()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/hydzns/ZVis/main/healthbargui.lua"))()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/znhacks/znvision/main/healthbargui.lua"))()
     end
 })
 
 Util:CreateButton({
     Name = "Damage Indicator NPC + Player [Screen]",
     Callback = function()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/hydzns/ZVis/main/hitindicatorgui.lua"))()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/znhacks/znvision/main/hitindicatorgui.lua"))()
     end
 })
 
 Util:CreateButton({
     Name = "Damage Indicator [Player-Head-Only]",
     Callback = function()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/hydzns/ZVis/main/hitindicatorhead.lua"))()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/znhacks/znvision/main/hitindicatorhead.lua"))()
     end
 })
 
 Util:CreateButton({
     Name = "Better Cooldowns",
     Callback = function()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/hydzns/ZVis/refs/heads/main/bettercd.lua"))()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/znhacks/znvision/refs/heads/main/bettercd.lua"))()
     end
 })
 
@@ -68,24 +75,14 @@ AdvTab:CreateSection("Player Info")
 AdvTab:CreateButton({
     Name = "Show Player Level",
     Callback = function()
-        local success, err = pcall(function()
-            loadstring(game:HttpGet("https://raw.githubusercontent.com/hydzns/ZVis/main/showlevel.lua"))()
-        end)
-        if not success then
-            warn("Failed to load showlevel.lua:", err)
-        end
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/znhacks/znvision/main/showlevel.lua"))()
     end,
 })
 
 AdvTab:CreateButton({
     Name = "Show Ranked Points",
     Callback = function()
-        local success, err = pcall(function()
-            loadstring(game:HttpGet("https://raw.githubusercontent.com/hydzns/ZVis/main/showrankpoint.lua"))()
-        end)
-        if not success then
-            warn("Failed to load showrankpoint.lua:", err)
-        end
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/znhacks/znvision/main/showrankpoint.lua"))()
     end,
 })
 
@@ -127,6 +124,5 @@ Hacks:CreateButton({
         end)
     end,
 })
-
 
 Rayfield:LoadConfiguration()
